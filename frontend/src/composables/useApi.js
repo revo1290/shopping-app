@@ -1,6 +1,6 @@
 import { ref } from 'vue'
 
-const API_BASE = '/api'
+const API_BASE = import.meta.env.VITE_API_URL || '/api'
 
 /**
  * fetch APIを使用したAPI通信composable
