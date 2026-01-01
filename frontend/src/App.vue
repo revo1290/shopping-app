@@ -1,13 +1,16 @@
 <script setup>
 import { ref, onMounted, watch } from 'vue'
 import { useApi } from './composables/useApi'
+import { useToast } from './composables/useToast'
 import ItemForm from './components/ItemForm.vue'
 import ItemList from './components/ItemList.vue'
 import StatsPanel from './components/StatsPanel.vue'
 import FilterBar from './components/FilterBar.vue'
 import EditModal from './components/EditModal.vue'
+import ToastContainer from './components/ToastContainer.vue'
 
 const { loading, error, getItems, getStats, createItem, updateItem, deleteItem } = useApi()
+const toast = useToast()
 
 const items = ref([])
 const stats = ref(null)
@@ -44,8 +47,10 @@ async function handleAddItem(item) {
   try {
     await createItem(item)
     await loadAll()
+    toast.success('商品を追加しました')
   } catch (e) {
     console.error('Failed to add item:', e)
+    toast.error('商品の追加に失敗しました')
   }
 }
 
@@ -53,8 +58,10 @@ async function handleTogglePurchased(item) {
   try {
     await updateItem(item.id, { purchased: !item.purchased })
     await loadAll()
+    toast.success(item.purchased ? '未購入に変更しました' : '購入済みにしました')
   } catch (e) {
     console.error('Failed to update item:', e)
+    toast.error('更新に失敗しました')
   }
 }
 
@@ -64,6 +71,7 @@ async function handleUpdateStock(item, newStock) {
     await loadAll()
   } catch (e) {
     console.error('Failed to update stock:', e)
+    toast.error('在庫の更新に失敗しました')
   }
 }
 
@@ -74,8 +82,10 @@ async function handleDeleteItem(item) {
   try {
     await deleteItem(item.id)
     await loadAll()
+    toast.success('商品を削除しました')
   } catch (e) {
     console.error('Failed to delete item:', e)
+    toast.error('削除に失敗しました')
   }
 }
 
@@ -92,8 +102,10 @@ async function handleSaveEdit(updates) {
     showEditModal.value = false
     editingItem.value = null
     await loadAll()
+    toast.success('商品を更新しました')
   } catch (e) {
     console.error('Failed to update item:', e)
+    toast.error('更新に失敗しました')
   }
 }
 
@@ -151,6 +163,8 @@ onMounted(loadAll)
       @close="handleCloseModal"
       @save="handleSaveEdit"
     />
+
+    <ToastContainer />
   </div>
 </template>
 
