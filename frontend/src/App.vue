@@ -26,6 +26,11 @@ const filters = ref({
   order: 'desc'
 })
 
+// 操作ごとのローディング状態
+const isAdding = ref(false)
+const isSaving = ref(false)
+const processingItemIds = ref(new Set())
+
 // 編集モーダル
 const showEditModal = ref(false)
 const editingItem = ref(null)
@@ -47,6 +52,7 @@ async function loadAll() {
 }
 
 async function handleAddItem(item) {
+  isAdding.value = true
   try {
     await createItem(item)
     await loadAll()
@@ -54,10 +60,13 @@ async function handleAddItem(item) {
   } catch (e) {
     console.error('Failed to add item:', e)
     toast.error('商品の追加に失敗しました')
+  } finally {
+    isAdding.value = false
   }
 }
 
 async function handleTogglePurchased(item) {
+  processingItemIds.value.add(item.id)
   try {
     await updateItem(item.id, { purchased: !item.purchased })
     await loadAll()
@@ -65,16 +74,21 @@ async function handleTogglePurchased(item) {
   } catch (e) {
     console.error('Failed to update item:', e)
     toast.error('更新に失敗しました')
+  } finally {
+    processingItemIds.value.delete(item.id)
   }
 }
 
 async function handleUpdateStock(item, newStock) {
+  processingItemIds.value.add(item.id)
   try {
     await updateItem(item.id, { stock: Math.max(0, newStock) })
     await loadAll()
   } catch (e) {
     console.error('Failed to update stock:', e)
     toast.error('在庫の更新に失敗しました')
+  } finally {
+    processingItemIds.value.delete(item.id)
   }
 }
 
@@ -82,6 +96,7 @@ async function handleDeleteItem(item) {
   if (!confirm(`「${item.name}」を削除しますか？`)) {
     return
   }
+  processingItemIds.value.add(item.id)
   try {
     await deleteItem(item.id)
     await loadAll()
@@ -89,6 +104,8 @@ async function handleDeleteItem(item) {
   } catch (e) {
     console.error('Failed to delete item:', e)
     toast.error('削除に失敗しました')
+  } finally {
+    processingItemIds.value.delete(item.id)
   }
 }
 
@@ -100,6 +117,7 @@ function handleEditItem(item) {
 async function handleSaveEdit(updates) {
   if (!editingItem.value) return
 
+  isSaving.value = true
   try {
     await updateItem(editingItem.value.id, updates)
     showEditModal.value = false
@@ -109,6 +127,8 @@ async function handleSaveEdit(updates) {
   } catch (e) {
     console.error('Failed to update item:', e)
     toast.error('更新に失敗しました')
+  } finally {
+    isSaving.value = false
   }
 }
 
@@ -134,7 +154,7 @@ onMounted(loadAll)
     <main>
       <StatsPanel :stats="stats" />
 
-      <ItemForm @submit="handleAddItem" />
+      <ItemForm @submit="handleAddItem" :loading="isAdding" />
 
       <FilterBar v-model="filters" />
 
@@ -158,6 +178,7 @@ onMounted(loadAll)
 
       <ItemList
         :items="items"
+        :processing-ids="processingItemIds"
         @toggle-purchased="handleTogglePurchased"
         @update-stock="handleUpdateStock"
         @delete="handleDeleteItem"
@@ -172,6 +193,7 @@ onMounted(loadAll)
     <EditModal
       :show="showEditModal"
       :item="editingItem"
+      :loading="isSaving"
       @close="handleCloseModal"
       @save="handleSaveEdit"
     />
