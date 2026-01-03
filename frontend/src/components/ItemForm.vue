@@ -46,16 +46,24 @@ function handleSubmit() {
     <form @submit.prevent="handleSubmit" class="item-form">
       <div class="form-main">
         <div class="input-with-icon">
-          <span class="input-icon">🛒</span>
+          <span class="input-icon" aria-hidden="true">🛒</span>
           <input
             v-model="name"
             type="text"
             placeholder="商品名を入力..."
             class="main-input"
             required
+            aria-label="商品名"
+            aria-required="true"
+            id="item-name-input"
           />
         </div>
-        <button type="submit" class="submit-btn" :disabled="!name.trim()">
+        <button
+          type="submit"
+          class="submit-btn"
+          :disabled="!name.trim()"
+          aria-label="商品を追加"
+        >
           <span>追加</span>
         </button>
       </div>
@@ -64,26 +72,30 @@ function handleSubmit() {
         type="button"
         class="toggle-details"
         @click="isExpanded = !isExpanded"
+        :aria-expanded="isExpanded"
+        aria-controls="item-details"
       >
         <span>{{ isExpanded ? '詳細を閉じる' : '詳細を設定' }}</span>
-        <span class="toggle-icon">{{ isExpanded ? '▲' : '▼' }}</span>
+        <span class="toggle-icon" aria-hidden="true">{{ isExpanded ? '▲' : '▼' }}</span>
       </button>
 
       <Transition name="slide">
-        <div v-if="isExpanded" class="form-details">
+        <div v-if="isExpanded" id="item-details" class="form-details" role="region" aria-label="商品の詳細設定">
           <div class="form-row">
             <div class="form-group">
-              <label>カテゴリ</label>
-              <div class="category-buttons">
+              <label id="category-label">カテゴリ</label>
+              <div class="category-buttons" role="radiogroup" aria-labelledby="category-label">
                 <button
                   v-for="cat in CATEGORIES"
                   :key="cat.value"
                   type="button"
+                  role="radio"
+                  :aria-checked="category === cat.value"
                   :class="['category-btn', { active: category === cat.value }]"
                   :style="category === cat.value ? { background: cat.color, borderColor: cat.color } : {}"
                   @click="category = cat.value"
                 >
-                  <span class="cat-icon">{{ cat.icon }}</span>
+                  <span class="cat-icon" aria-hidden="true">{{ cat.icon }}</span>
                   <span class="cat-label">{{ cat.label }}</span>
                 </button>
               </div>
@@ -92,12 +104,14 @@ function handleSubmit() {
 
           <div class="form-row">
             <div class="form-group">
-              <label>優先度</label>
-              <div class="priority-buttons">
+              <label id="priority-label">優先度</label>
+              <div class="priority-buttons" role="radiogroup" aria-labelledby="priority-label">
                 <button
                   v-for="p in PRIORITIES"
                   :key="p.value"
                   type="button"
+                  role="radio"
+                  :aria-checked="priority === p.value"
                   :class="['priority-btn', { active: priority === p.value }]"
                   :style="priority === p.value ? { background: p.color, borderColor: p.color } : {}"
                   @click="priority = p.value"
@@ -108,42 +122,46 @@ function handleSubmit() {
             </div>
 
             <div class="form-group">
-              <label>購入期限</label>
+              <label for="deadline-input">購入期限</label>
               <input
+                id="deadline-input"
                 v-model="deadline"
                 type="date"
                 :min="minDate"
                 class="date-input"
+                aria-label="購入期限"
               />
             </div>
           </div>
 
           <div class="form-row">
             <div class="form-group small">
-              <label>購入数</label>
-              <div class="number-input">
-                <button type="button" @click="quantity = Math.max(1, quantity - 1)">−</button>
-                <input v-model.number="quantity" type="number" min="1" />
-                <button type="button" @click="quantity++">+</button>
+              <label for="quantity-input">購入数</label>
+              <div class="number-input" role="spinbutton" :aria-valuenow="quantity" aria-valuemin="1" aria-label="購入数">
+                <button type="button" @click="quantity = Math.max(1, quantity - 1)" aria-label="購入数を減らす">−</button>
+                <input id="quantity-input" v-model.number="quantity" type="number" min="1" aria-label="購入数" />
+                <button type="button" @click="quantity++" aria-label="購入数を増やす">+</button>
               </div>
             </div>
 
             <div class="form-group small">
-              <label>現在の在庫</label>
-              <div class="number-input">
-                <button type="button" @click="stock = Math.max(0, stock - 1)">−</button>
-                <input v-model.number="stock" type="number" min="0" />
-                <button type="button" @click="stock++">+</button>
+              <label for="stock-input">現在の在庫</label>
+              <div class="number-input" role="spinbutton" :aria-valuenow="stock" aria-valuemin="0" aria-label="現在の在庫">
+                <button type="button" @click="stock = Math.max(0, stock - 1)" aria-label="在庫を減らす">−</button>
+                <input id="stock-input" v-model.number="stock" type="number" min="0" aria-label="現在の在庫" />
+                <button type="button" @click="stock++" aria-label="在庫を増やす">+</button>
               </div>
             </div>
 
             <div class="form-group flex-1">
-              <label>メモ</label>
+              <label for="memo-input">メモ</label>
               <input
+                id="memo-input"
                 v-model="memo"
                 type="text"
                 placeholder="メモ（任意）"
                 class="memo-input"
+                aria-label="メモ"
               />
             </div>
           </div>

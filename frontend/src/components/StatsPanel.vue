@@ -8,41 +8,41 @@ defineProps({
 </script>
 
 <template>
-  <div class="stats-panel" v-if="stats">
-    <div class="stat-card total">
-      <div class="stat-icon">📋</div>
+  <div class="stats-panel" v-if="stats" role="region" aria-label="統計情報">
+    <div class="stat-card total" role="group" :aria-label="`登録商品: ${stats.total || 0}件`">
+      <div class="stat-icon" aria-hidden="true">📋</div>
       <div class="stat-info">
         <div class="stat-value">{{ stats.total || 0 }}</div>
         <div class="stat-label">登録商品</div>
       </div>
     </div>
 
-    <div class="stat-card remaining">
-      <div class="stat-icon">🛒</div>
+    <div class="stat-card remaining" role="group" :aria-label="`未購入: ${stats.remaining || 0}件`">
+      <div class="stat-icon" aria-hidden="true">🛒</div>
       <div class="stat-info">
         <div class="stat-value">{{ stats.remaining || 0 }}</div>
         <div class="stat-label">未購入</div>
       </div>
     </div>
 
-    <div class="stat-card purchased">
-      <div class="stat-icon">✅</div>
+    <div class="stat-card purchased" role="group" :aria-label="`購入済み: ${stats.purchased || 0}件`">
+      <div class="stat-icon" aria-hidden="true">✅</div>
       <div class="stat-info">
         <div class="stat-value">{{ stats.purchased || 0 }}</div>
         <div class="stat-label">購入済み</div>
       </div>
     </div>
 
-    <div class="stat-card low-stock" :class="{ warning: stats.lowStock > 0 }">
-      <div class="stat-icon">⚠️</div>
+    <div class="stat-card low-stock" :class="{ warning: stats.lowStock > 0 }" role="group" :aria-label="`在庫少: ${stats.lowStock || 0}件${stats.lowStock > 0 ? '（注意）' : ''}`">
+      <div class="stat-icon" aria-hidden="true">⚠️</div>
       <div class="stat-info">
         <div class="stat-value">{{ stats.lowStock || 0 }}</div>
         <div class="stat-label">在庫少</div>
       </div>
     </div>
 
-    <div class="stat-card urgent" :class="{ warning: stats.urgent > 0 }">
-      <div class="stat-icon">🔥</div>
+    <div class="stat-card urgent" :class="{ warning: stats.urgent > 0 }" role="group" :aria-label="`期限間近: ${stats.urgent || 0}件${stats.urgent > 0 ? '（注意）' : ''}`">
+      <div class="stat-icon" aria-hidden="true">🔥</div>
       <div class="stat-info">
         <div class="stat-value">{{ stats.urgent || 0 }}</div>
         <div class="stat-label">期限間近</div>
