@@ -1,6 +1,7 @@
 <script setup>
 import { ref, watch, computed } from 'vue'
 import { CATEGORIES, PRIORITIES } from '../composables/useApi'
+import LoadingSpinner from './LoadingSpinner.vue'
 
 const props = defineProps({
   item: {
@@ -8,6 +9,10 @@ const props = defineProps({
     default: null
   },
   show: {
+    type: Boolean,
+    default: false
+  },
+  loading: {
     type: Boolean,
     default: false
   }
@@ -161,8 +166,11 @@ function handleBackdropClick(e) {
             </div>
 
             <div class="modal-footer">
-              <button type="button" class="cancel-btn" @click="handleClose">キャンセル</button>
-              <button type="submit" class="save-btn" :disabled="!form.name.trim()">保存</button>
+              <button type="button" class="cancel-btn" @click="handleClose" :disabled="loading">キャンセル</button>
+              <button type="submit" class="save-btn" :disabled="!form.name.trim() || loading">
+                <LoadingSpinner v-if="loading" size="small" />
+                <span v-else>保存</span>
+              </button>
             </div>
           </form>
         </div>
@@ -403,6 +411,10 @@ function handleBackdropClick(e) {
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 80px;
 }
 
 .save-btn:hover:not(:disabled) {
