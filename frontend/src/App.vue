@@ -8,8 +8,11 @@ import StatsPanel from './components/StatsPanel.vue'
 import FilterBar from './components/FilterBar.vue'
 import EditModal from './components/EditModal.vue'
 import ToastContainer from './components/ToastContainer.vue'
+import OfflineBanner from './components/OfflineBanner.vue'
+import { useOnlineStatus } from './composables/useOnlineStatus'
 
-const { loading, error, getItems, getStats, createItem, updateItem, deleteItem } = useApi()
+const { loading, error, errorDetails, getItems, getStats, createItem, updateItem, deleteItem } = useApi()
+const { isOnline } = useOnlineStatus()
 const toast = useToast()
 
 const items = ref([])
@@ -120,7 +123,8 @@ onMounted(loadAll)
 </script>
 
 <template>
-  <div class="app">
+  <OfflineBanner />
+  <div class="app" :class="{ 'has-offline-banner': !isOnline }">
     <header>
       <div class="logo">🛒</div>
       <h1>お買い物リスト</h1>
@@ -139,9 +143,17 @@ onMounted(loadAll)
         <span>読み込み中...</span>
       </div>
 
-      <div v-else-if="error" class="error">
-        <span class="error-icon">⚠️</span>
-        <span>{{ error }}</span>
+      <div v-else-if="error" class="error-container">
+        <div class="error">
+          <span class="error-icon">{{ errorDetails?.type === 'offline' ? '📡' : errorDetails?.type === 'network' ? '🔌' : '⚠️' }}</span>
+          <div class="error-content">
+            <span class="error-message">{{ error }}</span>
+            <span v-if="errorDetails?.details" class="error-details">{{ errorDetails.details }}</span>
+          </div>
+        </div>
+        <button class="retry-btn" @click="loadAll">
+          <span>再試行</span>
+        </button>
       </div>
 
       <ItemList
@@ -189,6 +201,11 @@ body {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  transition: padding-top 0.3s ease;
+}
+
+.app.has-offline-banner {
+  padding-top: 64px;
 }
 
 header {
@@ -248,20 +265,61 @@ main {
   to { transform: rotate(360deg); }
 }
 
-.error {
+.error-container {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: center;
-  gap: 8px;
-  padding: 20px;
+  gap: 16px;
+  padding: 24px;
   background: #ffebee;
-  color: #c62828;
   border-radius: 12px;
   margin-bottom: 16px;
 }
 
+.error {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  color: #c62828;
+}
+
 .error-icon {
-  font-size: 20px;
+  font-size: 24px;
+  flex-shrink: 0;
+}
+
+.error-content {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.error-message {
+  font-weight: 600;
+  font-size: 16px;
+}
+
+.error-details {
+  font-size: 14px;
+  color: #b71c1c;
+  opacity: 0.8;
+}
+
+.retry-btn {
+  padding: 10px 24px;
+  background: #c62828;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.retry-btn:hover {
+  background: #b71c1c;
+  transform: translateY(-1px);
 }
 
 footer {
