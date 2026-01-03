@@ -1,12 +1,21 @@
 <script setup>
 import { CATEGORIES, PRIORITIES } from '../composables/useApi'
+import LoadingSpinner from './LoadingSpinner.vue'
 
-defineProps({
+const props = defineProps({
   items: {
     type: Array,
     required: true
+  },
+  processingIds: {
+    type: Set,
+    default: () => new Set()
   }
 })
+
+function isProcessing(itemId) {
+  return props.processingIds.has(itemId)
+}
 
 const emit = defineEmits(['toggle-purchased', 'delete', 'update-stock', 'edit'])
 
@@ -45,8 +54,11 @@ function isLowStock(item) {
       <li
         v-for="item in items"
         :key="item.id"
-        :class="['item-card', { purchased: item.purchased, 'low-stock': isLowStock(item) }]"
+        :class="['item-card', { purchased: item.purchased, 'low-stock': isLowStock(item), processing: isProcessing(item.id) }]"
       >
+        <div v-if="isProcessing(item.id)" class="processing-overlay">
+          <LoadingSpinner size="medium" />
+        </div>
         <div class="item-checkbox">
           <input
             type="checkbox"
@@ -142,11 +154,32 @@ function isLowStock(item) {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
   transition: all 0.3s ease;
   border: 2px solid transparent;
+  position: relative;
 }
 
 .item-card:hover {
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
   transform: translateY(-2px);
+}
+
+.item-card.processing {
+  pointer-events: none;
+  position: relative;
+}
+
+.processing-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  z-index: 10;
+  color: #667eea;
 }
 
 .item-card.purchased {
