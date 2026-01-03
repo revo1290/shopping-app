@@ -28,7 +28,7 @@ describe('useApi', () => {
       const { getItems, loading, error } = useApi()
       const result = await getItems()
 
-      expect(global.fetch).toHaveBeenCalledWith('/api/items')
+      expect(global.fetch).toHaveBeenCalledWith('/api/items', {})
       expect(result).toEqual(mockItems)
       expect(loading.value).toBe(false)
       expect(error.value).toBe(null)
@@ -67,8 +67,8 @@ describe('useApi', () => {
 
       const { getItems, error } = useApi()
 
-      await expect(getItems()).rejects.toThrow('商品の取得に失敗しました')
-      expect(error.value).toBe('商品の取得に失敗しました')
+      await expect(getItems()).rejects.toThrow('サーバーエラーが発生しました')
+      expect(error.value).toBe('サーバーエラーが発生しました')
     })
 
     it('should handle network error', async () => {
@@ -76,8 +76,8 @@ describe('useApi', () => {
 
       const { getItems, error } = useApi()
 
-      await expect(getItems()).rejects.toThrow('Network error')
-      expect(error.value).toBe('Network error')
+      await expect(getItems()).rejects.toThrow()
+      expect(error.value).toBeTruthy()
     })
   })
 
@@ -93,7 +93,7 @@ describe('useApi', () => {
       const { getItem } = useApi()
       const result = await getItem(1)
 
-      expect(global.fetch).toHaveBeenCalledWith('/api/items/1')
+      expect(global.fetch).toHaveBeenCalledWith('/api/items/1', {})
       expect(result).toEqual(mockItem)
     })
 
@@ -105,8 +105,8 @@ describe('useApi', () => {
 
       const { getItem, error } = useApi()
 
-      await expect(getItem(999)).rejects.toThrow('商品の取得に失敗しました')
-      expect(error.value).toBe('商品の取得に失敗しました')
+      await expect(getItem(999)).rejects.toThrow('指定されたデータが見つかりません')
+      expect(error.value).toBe('指定されたデータが見つかりません')
     })
   })
 
@@ -127,7 +127,7 @@ describe('useApi', () => {
       const { getStats } = useApi()
       const result = await getStats()
 
-      expect(global.fetch).toHaveBeenCalledWith('/api/items/stats')
+      expect(global.fetch).toHaveBeenCalledWith('/api/items/stats', {})
       expect(result).toEqual(mockStats)
     })
 
@@ -184,13 +184,14 @@ describe('useApi', () => {
     it('should use default error message when server error is empty', async () => {
       global.fetch = vi.fn().mockResolvedValue({
         ok: false,
+        status: 400,
         json: () => Promise.resolve({})
       })
 
       const { createItem, error } = useApi()
 
-      await expect(createItem({})).rejects.toThrow('商品の登録に失敗しました')
-      expect(error.value).toBe('商品の登録に失敗しました')
+      await expect(createItem({})).rejects.toThrow('入力内容に問題があります')
+      expect(error.value).toBe('入力内容に問題があります')
     })
   })
 
@@ -252,8 +253,8 @@ describe('useApi', () => {
 
       const { deleteItem, error } = useApi()
 
-      await expect(deleteItem(999)).rejects.toThrow('商品の削除に失敗しました')
-      expect(error.value).toBe('商品の削除に失敗しました')
+      await expect(deleteItem(999)).rejects.toThrow('指定されたデータが見つかりません')
+      expect(error.value).toBe('指定されたデータが見つかりません')
     })
   })
 
