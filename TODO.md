@@ -230,10 +230,10 @@
 - [ ] カラーコントラストの確認
 
 ### 5.8 Frontend - テストカバレッジ拡充
-- [ ] ItemList.vue のテスト追加
-- [ ] EditModal.vue のテスト追加
-- [ ] StatsPanel.vue のテスト追加
-- [ ] App.vue の統合テスト追加
+- [x] ItemList.vue のテスト追加
+- [x] EditModal.vue のテスト追加
+- [x] StatsPanel.vue のテスト追加
+- [x] App.vue の統合テスト追加
 
 ### 5.9 E2E テスト
 - [ ] Playwright または Cypress の導入
@@ -314,10 +314,10 @@
 | Phase 2: Backend | 28 | 28 | 100% |
 | Phase 3: Frontend | 43 | 43 | 100% |
 | Phase 4: ドキュメント | 12 | 12 | 100% |
-| Phase 5: 品質改善 | 38 | 18 | 47% |
+| Phase 5: 品質改善 | 38 | 22 | 58% |
 | Phase 6: 追加機能 | 13 | 0 | 0% |
 | Phase 7: デプロイ | 10 | 0 | 0% |
-| **合計** | **147** | **104** | **71%** |
+| **合計** | **147** | **108** | **73%** |
 
 ---
 
@@ -331,7 +331,7 @@
 5. デプロイ設定
 
 ### 中優先度（品質向上）
-1. テストカバレッジ拡充（ItemList, EditModal, StatsPanel）
+1. ~~テストカバレッジ拡充（ItemList, EditModal, StatsPanel）~~ ✅
 2. アクセシビリティ改善
 3. ~~ログ・監視機能の追加~~ ✅
 4. ESLint/Prettier 設定
