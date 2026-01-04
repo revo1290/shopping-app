@@ -8,8 +8,11 @@ import StatsPanel from './components/StatsPanel.vue'
 import FilterBar from './components/FilterBar.vue'
 import EditModal from './components/EditModal.vue'
 import ToastContainer from './components/ToastContainer.vue'
+import OfflineBanner from './components/OfflineBanner.vue'
+import { useOnlineStatus } from './composables/useOnlineStatus'
 
-const { loading, error, getItems, getStats, createItem, updateItem, deleteItem } = useApi()
+const { loading, error, errorDetails, getItems, getStats, createItem, updateItem, deleteItem } = useApi()
+const { isOnline } = useOnlineStatus()
 const toast = useToast()
 
 const items = ref([])
@@ -22,6 +25,11 @@ const filters = ref({
   sort: 'created_at',
   order: 'desc'
 })
+
+// 操作ごとのローディング状態
+const isAdding = ref(false)
+const isSaving = ref(false)
+const processingItemIds = ref(new Set())
 
 // 編集モーダル
 const showEditModal = ref(false)
@@ -44,6 +52,7 @@ async function loadAll() {
 }
 
 async function handleAddItem(item) {
+  isAdding.value = true
   try {
     await createItem(item)
     await loadAll()
@@ -51,10 +60,13 @@ async function handleAddItem(item) {
   } catch (e) {
     console.error('Failed to add item:', e)
     toast.error('商品の追加に失敗しました')
+  } finally {
+    isAdding.value = false
   }
 }
 
 async function handleTogglePurchased(item) {
+  processingItemIds.value.add(item.id)
   try {
     await updateItem(item.id, { purchased: !item.purchased })
     await loadAll()
@@ -62,16 +74,21 @@ async function handleTogglePurchased(item) {
   } catch (e) {
     console.error('Failed to update item:', e)
     toast.error('更新に失敗しました')
+  } finally {
+    processingItemIds.value.delete(item.id)
   }
 }
 
 async function handleUpdateStock(item, newStock) {
+  processingItemIds.value.add(item.id)
   try {
     await updateItem(item.id, { stock: Math.max(0, newStock) })
     await loadAll()
   } catch (e) {
     console.error('Failed to update stock:', e)
     toast.error('在庫の更新に失敗しました')
+  } finally {
+    processingItemIds.value.delete(item.id)
   }
 }
 
@@ -79,6 +96,7 @@ async function handleDeleteItem(item) {
   if (!confirm(`「${item.name}」を削除しますか？`)) {
     return
   }
+  processingItemIds.value.add(item.id)
   try {
     await deleteItem(item.id)
     await loadAll()
@@ -86,6 +104,8 @@ async function handleDeleteItem(item) {
   } catch (e) {
     console.error('Failed to delete item:', e)
     toast.error('削除に失敗しました')
+  } finally {
+    processingItemIds.value.delete(item.id)
   }
 }
 
@@ -97,6 +117,7 @@ function handleEditItem(item) {
 async function handleSaveEdit(updates) {
   if (!editingItem.value) return
 
+  isSaving.value = true
   try {
     await updateItem(editingItem.value.id, updates)
     showEditModal.value = false
@@ -106,6 +127,8 @@ async function handleSaveEdit(updates) {
   } catch (e) {
     console.error('Failed to update item:', e)
     toast.error('更新に失敗しました')
+  } finally {
+    isSaving.value = false
   }
 }
 
@@ -120,7 +143,8 @@ onMounted(loadAll)
 </script>
 
 <template>
-  <div class="app">
+  <OfflineBanner />
+  <div class="app" :class="{ 'has-offline-banner': !isOnline }">
     <header>
       <div class="logo">🛒</div>
       <h1>お買い物リスト</h1>
@@ -130,7 +154,7 @@ onMounted(loadAll)
     <main>
       <StatsPanel :stats="stats" />
 
-      <ItemForm @submit="handleAddItem" />
+      <ItemForm @submit="handleAddItem" :loading="isAdding" />
 
       <FilterBar v-model="filters" />
 
@@ -139,13 +163,22 @@ onMounted(loadAll)
         <span>読み込み中...</span>
       </div>
 
-      <div v-else-if="error" class="error">
-        <span class="error-icon">⚠️</span>
-        <span>{{ error }}</span>
+      <div v-else-if="error" class="error-container">
+        <div class="error">
+          <span class="error-icon">{{ errorDetails?.type === 'offline' ? '📡' : errorDetails?.type === 'network' ? '🔌' : '⚠️' }}</span>
+          <div class="error-content">
+            <span class="error-message">{{ error }}</span>
+            <span v-if="errorDetails?.details" class="error-details">{{ errorDetails.details }}</span>
+          </div>
+        </div>
+        <button class="retry-btn" @click="loadAll">
+          <span>再試行</span>
+        </button>
       </div>
 
       <ItemList
         :items="items"
+        :processing-ids="processingItemIds"
         @toggle-purchased="handleTogglePurchased"
         @update-stock="handleUpdateStock"
         @delete="handleDeleteItem"
@@ -160,6 +193,7 @@ onMounted(loadAll)
     <EditModal
       :show="showEditModal"
       :item="editingItem"
+      :loading="isSaving"
       @close="handleCloseModal"
       @save="handleSaveEdit"
     />
@@ -189,6 +223,11 @@ body {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  transition: padding-top 0.3s ease;
+}
+
+.app.has-offline-banner {
+  padding-top: 64px;
 }
 
 header {
@@ -248,20 +287,61 @@ main {
   to { transform: rotate(360deg); }
 }
 
-.error {
+.error-container {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: center;
-  gap: 8px;
-  padding: 20px;
+  gap: 16px;
+  padding: 24px;
   background: #ffebee;
-  color: #c62828;
   border-radius: 12px;
   margin-bottom: 16px;
 }
 
+.error {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  color: #c62828;
+}
+
 .error-icon {
-  font-size: 20px;
+  font-size: 24px;
+  flex-shrink: 0;
+}
+
+.error-content {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.error-message {
+  font-weight: 600;
+  font-size: 16px;
+}
+
+.error-details {
+  font-size: 14px;
+  color: #b71c1c;
+  opacity: 0.8;
+}
+
+.retry-btn {
+  padding: 10px 24px;
+  background: #c62828;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.retry-btn:hover {
+  background: #b71c1c;
+  transform: translateY(-1px);
 }
 
 footer {

@@ -1,6 +1,14 @@
 <script setup>
 import { ref, computed } from 'vue'
 import { CATEGORIES, PRIORITIES } from '../composables/useApi'
+import LoadingSpinner from './LoadingSpinner.vue'
+
+defineProps({
+  loading: {
+    type: Boolean,
+    default: false
+  }
+})
 
 const emit = defineEmits(['submit'])
 
@@ -61,10 +69,11 @@ function handleSubmit() {
         <button
           type="submit"
           class="submit-btn"
-          :disabled="!name.trim()"
+          :disabled="!name.trim() || loading"
           aria-label="商品を追加"
         >
-          <span>追加</span>
+          <LoadingSpinner v-if="loading" size="small" />
+          <span v-else>追加</span>
         </button>
       </div>
 
