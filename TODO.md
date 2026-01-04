@@ -230,10 +230,10 @@
 - [x] カラーコントラストの確認
 
 ### 5.8 Frontend - テストカバレッジ拡充
-- [ ] ItemList.vue のテスト追加
-- [ ] EditModal.vue のテスト追加
-- [ ] StatsPanel.vue のテスト追加
-- [ ] App.vue の統合テスト追加
+- [x] ItemList.vue のテスト追加
+- [x] EditModal.vue のテスト追加
+- [x] StatsPanel.vue のテスト追加
+- [x] App.vue の統合テスト追加
 
 ### 5.9 E2E テスト
 - [ ] Playwright または Cypress の導入
@@ -314,10 +314,10 @@
 | Phase 2: Backend | 28 | 28 | 100% |
 | Phase 3: Frontend | 43 | 43 | 100% |
 | Phase 4: ドキュメント | 12 | 12 | 100% |
-| Phase 5: 品質改善 | 38 | 26 | 68% |
+| Phase 5: 品質改善 | 38 | 30 | 79% |
 | Phase 6: 追加機能 | 13 | 0 | 0% |
 | Phase 7: デプロイ | 10 | 0 | 0% |
-| **合計** | **147** | **112** | **76%** |
+| **合計** | **147** | **116** | **79%** |
 
 ---
 
