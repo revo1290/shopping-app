@@ -1,0 +1,58 @@
+# Labeler configuration for automatic PR labeling
+# See: https://github.com/actions/labeler
+
+# Frontend changes
+frontend:
+  - changed-files:
+      - any-glob-to-any-file: 'frontend/**/*'
+
+# Backend changes
+backend:
+  - changed-files:
+      - any-glob-to-any-file: 'backend/**/*'
+
+# Documentation changes
+documentation:
+  - changed-files:
+      - any-glob-to-any-file:
+          - '**/*.md'
+          - 'docs/**/*'
+
+# Test changes
+tests:
+  - changed-files:
+      - any-glob-to-any-file:
+          - '**/__tests__/**/*'
+          - '**/*.test.js'
+          - '**/*.spec.js'
+
+# Configuration changes
+config:
+  - changed-files:
+      - any-glob-to-any-file:
+          - '**/*.config.js'
+          - '**/*.config.ts'
+          - '**/package.json'
+          - '**/package-lock.json'
+          - '.github/**/*'
+
+# CSS/Styling changes
+styling:
+  - changed-files:
+      - any-glob-to-any-file:
+          - '**/*.css'
+          - '**/*.scss'
+          - '**/*.sass'
+          - '**/*.less'
+
+# Vue components
+components:
+  - changed-files:
+      - any-glob-to-any-file: 'frontend/src/components/**/*.vue'
+
+# API changes
+api:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'backend/src/routes/**/*'
+          - 'frontend/src/composables/useApi.js'
