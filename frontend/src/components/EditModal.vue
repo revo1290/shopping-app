@@ -74,36 +74,40 @@ function handleBackdropClick(e) {
 <template>
   <Teleport to="body">
     <Transition name="modal">
-      <div v-if="show" class="modal-backdrop" @click="handleBackdropClick">
-        <div class="modal-container">
+      <div v-if="show" class="modal-backdrop" @click="handleBackdropClick" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+        <div class="modal-container" @keydown.esc="handleClose">
           <div class="modal-header">
-            <h2>商品を編集</h2>
-            <button class="close-btn" @click="handleClose">×</button>
+            <h2 id="modal-title">商品を編集</h2>
+            <button class="close-btn" @click="handleClose" aria-label="閉じる">×</button>
           </div>
 
           <form @submit.prevent="handleSubmit" class="modal-body">
             <div class="form-group">
-              <label>商品名 *</label>
+              <label for="edit-name">商品名 *</label>
               <input
+                id="edit-name"
                 v-model="form.name"
                 type="text"
                 placeholder="商品名を入力"
                 required
+                aria-required="true"
               />
             </div>
 
             <div class="form-group">
-              <label>カテゴリ</label>
-              <div class="category-buttons">
+              <label id="edit-category-label">カテゴリ</label>
+              <div class="category-buttons" role="radiogroup" aria-labelledby="edit-category-label">
                 <button
                   v-for="cat in CATEGORIES"
                   :key="cat.value"
                   type="button"
+                  role="radio"
+                  :aria-checked="form.category === cat.value"
                   :class="['category-btn', { active: form.category === cat.value }]"
                   :style="form.category === cat.value ? { background: cat.color, borderColor: cat.color } : {}"
                   @click="form.category = cat.value"
                 >
-                  <span class="cat-icon">{{ cat.icon }}</span>
+                  <span class="cat-icon" aria-hidden="true">{{ cat.icon }}</span>
                   <span class="cat-label">{{ cat.label }}</span>
                 </button>
               </div>
@@ -111,12 +115,14 @@ function handleBackdropClick(e) {
 
             <div class="form-row">
               <div class="form-group">
-                <label>優先度</label>
-                <div class="priority-buttons">
+                <label id="edit-priority-label">優先度</label>
+                <div class="priority-buttons" role="radiogroup" aria-labelledby="edit-priority-label">
                   <button
                     v-for="p in PRIORITIES"
                     :key="p.value"
                     type="button"
+                    role="radio"
+                    :aria-checked="form.priority === p.value"
                     :class="['priority-btn', { active: form.priority === p.value }]"
                     :style="form.priority === p.value ? { background: p.color, borderColor: p.color } : {}"
                     @click="form.priority = p.value"
@@ -127,8 +133,9 @@ function handleBackdropClick(e) {
               </div>
 
               <div class="form-group">
-                <label>購入期限</label>
+                <label for="edit-deadline">購入期限</label>
                 <input
+                  id="edit-deadline"
                   v-model="form.deadline"
                   type="date"
                   :min="minDate"
@@ -138,27 +145,28 @@ function handleBackdropClick(e) {
 
             <div class="form-row">
               <div class="form-group small">
-                <label>購入数</label>
-                <div class="number-input">
-                  <button type="button" @click="form.quantity = Math.max(1, form.quantity - 1)">−</button>
-                  <input v-model.number="form.quantity" type="number" min="1" />
-                  <button type="button" @click="form.quantity++">+</button>
+                <label for="edit-quantity">購入数</label>
+                <div class="number-input" role="spinbutton" :aria-valuenow="form.quantity" aria-valuemin="1" aria-label="購入数">
+                  <button type="button" @click="form.quantity = Math.max(1, form.quantity - 1)" aria-label="購入数を減らす">−</button>
+                  <input id="edit-quantity" v-model.number="form.quantity" type="number" min="1" aria-label="購入数" />
+                  <button type="button" @click="form.quantity++" aria-label="購入数を増やす">+</button>
                 </div>
               </div>
 
               <div class="form-group small">
-                <label>現在の在庫</label>
-                <div class="number-input">
-                  <button type="button" @click="form.stock = Math.max(0, form.stock - 1)">−</button>
-                  <input v-model.number="form.stock" type="number" min="0" />
-                  <button type="button" @click="form.stock++">+</button>
+                <label for="edit-stock">現在の在庫</label>
+                <div class="number-input" role="spinbutton" :aria-valuenow="form.stock" aria-valuemin="0" aria-label="現在の在庫">
+                  <button type="button" @click="form.stock = Math.max(0, form.stock - 1)" aria-label="在庫を減らす">−</button>
+                  <input id="edit-stock" v-model.number="form.stock" type="number" min="0" aria-label="現在の在庫" />
+                  <button type="button" @click="form.stock++" aria-label="在庫を増やす">+</button>
                 </div>
               </div>
             </div>
 
             <div class="form-group">
-              <label>メモ</label>
+              <label for="edit-memo">メモ</label>
               <textarea
+                id="edit-memo"
                 v-model="form.memo"
                 placeholder="メモ（任意）"
                 rows="3"

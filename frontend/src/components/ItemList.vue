@@ -49,12 +49,14 @@ function isLowStock(item) {
 </script>
 
 <template>
-  <div class="item-list">
-    <TransitionGroup name="list" tag="ul">
+  <div class="item-list" role="region" aria-label="商品一覧">
+    <TransitionGroup name="list" tag="ul" role="list" aria-label="商品リスト">
       <li
         v-for="item in items"
         :key="item.id"
         :class="['item-card', { purchased: item.purchased, 'low-stock': isLowStock(item), processing: isProcessing(item.id) }]"
+        role="listitem"
+        :aria-label="`${item.name}${item.purchased ? '（購入済み）' : ''}${isLowStock(item) ? '（在庫少）' : ''}`"
       >
         <div v-if="isProcessing(item.id)" class="processing-overlay">
           <LoadingSpinner size="medium" />
@@ -65,60 +67,62 @@ function isLowStock(item) {
             :id="'item-' + item.id"
             :checked="item.purchased"
             @change="emit('toggle-purchased', item)"
+            :aria-label="`${item.name}を${item.purchased ? '未購入に戻す' : '購入済みにする'}`"
           />
-          <label :for="'item-' + item.id" class="checkbox-label"></label>
+          <label :for="'item-' + item.id" class="checkbox-label" aria-hidden="true"></label>
         </div>
 
-        <div class="item-content" @click="emit('edit', item)">
+        <div class="item-content" @click="emit('edit', item)" role="button" tabindex="0" @keypress.enter="emit('edit', item)" :aria-label="`${item.name}を編集`">
           <div class="item-header">
-            <span class="category-badge" :style="{ background: getCategoryInfo(item.category).color }">
-              {{ getCategoryInfo(item.category).icon }}
+            <span class="category-badge" :style="{ background: getCategoryInfo(item.category).color }" :aria-label="`カテゴリ: ${getCategoryInfo(item.category).label}`">
+              <span aria-hidden="true">{{ getCategoryInfo(item.category).icon }}</span>
             </span>
             <span class="item-name">{{ item.name }}</span>
             <span
               class="priority-badge"
               :style="{ background: getPriorityInfo(item.priority).color }"
+              :aria-label="`優先度: ${getPriorityInfo(item.priority).label}`"
             >
               {{ getPriorityInfo(item.priority).label }}
             </span>
           </div>
 
           <div class="item-meta">
-            <div class="meta-item quantity">
-              <span class="meta-icon">📦</span>
+            <div class="meta-item quantity" aria-label="購入予定数">
+              <span class="meta-icon" aria-hidden="true">📦</span>
               <span>購入: {{ item.quantity }}個</span>
             </div>
 
-            <div class="meta-item stock" :class="{ warning: isLowStock(item) }">
-              <span class="meta-icon">🏠</span>
+            <div class="meta-item stock" :class="{ warning: isLowStock(item) }" :aria-label="`在庫${item.stock}個${isLowStock(item) ? '（在庫少）' : ''}`">
+              <span class="meta-icon" aria-hidden="true">🏠</span>
               <span>在庫: {{ item.stock }}個</span>
-              <div class="stock-controls" @click.stop>
-                <button @click="emit('update-stock', item, item.stock - 1)" :disabled="item.stock <= 0">−</button>
-                <button @click="emit('update-stock', item, item.stock + 1)">+</button>
+              <div class="stock-controls" @click.stop role="group" aria-label="在庫調整">
+                <button @click="emit('update-stock', item, item.stock - 1)" :disabled="item.stock <= 0" aria-label="在庫を減らす">−</button>
+                <button @click="emit('update-stock', item, item.stock + 1)" aria-label="在庫を増やす">+</button>
               </div>
             </div>
 
-            <div v-if="item.deadline" class="meta-item deadline" :class="formatDate(item.deadline)?.class">
-              <span class="meta-icon">📅</span>
+            <div v-if="item.deadline" class="meta-item deadline" :class="formatDate(item.deadline)?.class" aria-label="購入期限">
+              <span class="meta-icon" aria-hidden="true">📅</span>
               <span>{{ formatDate(item.deadline)?.text }}</span>
             </div>
 
-            <div v-if="item.memo" class="meta-item memo">
-              <span class="meta-icon">📝</span>
+            <div v-if="item.memo" class="meta-item memo" aria-label="メモ">
+              <span class="meta-icon" aria-hidden="true">📝</span>
               <span>{{ item.memo }}</span>
             </div>
           </div>
         </div>
 
-        <div class="item-actions">
-          <button class="edit-btn" @click="emit('edit', item)" title="編集">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <div class="item-actions" role="group" aria-label="操作">
+          <button class="edit-btn" @click="emit('edit', item)" :aria-label="`${item.name}を編集`">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
               <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
               <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
             </svg>
           </button>
-          <button class="delete-btn" @click="emit('delete', item)" title="削除">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <button class="delete-btn" @click="emit('delete', item)" :aria-label="`${item.name}を削除`">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
               <path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/>
             </svg>
           </button>
@@ -126,8 +130,8 @@ function isLowStock(item) {
       </li>
     </TransitionGroup>
 
-    <div v-if="items.length === 0" class="empty-state">
-      <div class="empty-icon">🛒</div>
+    <div v-if="items.length === 0" class="empty-state" role="status" aria-live="polite">
+      <div class="empty-icon" aria-hidden="true">🛒</div>
       <p class="empty-title">商品が見つかりません</p>
       <p class="empty-text">上のフォームから商品を追加するか、検索条件を変更してください</p>
     </div>
@@ -154,12 +158,26 @@ function isLowStock(item) {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
   transition: all 0.3s ease;
   border: 2px solid transparent;
-  position: relative;
 }
 
 .item-card:hover {
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
   transform: translateY(-2px);
+}
+
+.item-card.purchased {
+  background: #f8f9fa;
+  opacity: 0.7;
+}
+
+.item-card.purchased .item-name {
+  text-decoration: line-through;
+  color: #999;
+}
+
+.item-card.low-stock {
+  border-color: #ffcdd2;
+  background: #fff8f8;
 }
 
 .item-card.processing {
@@ -180,21 +198,6 @@ function isLowStock(item) {
   border-radius: 12px;
   z-index: 10;
   color: #667eea;
-}
-
-.item-card.purchased {
-  background: #f8f9fa;
-  opacity: 0.7;
-}
-
-.item-card.purchased .item-name {
-  text-decoration: line-through;
-  color: #999;
-}
-
-.item-card.low-stock {
-  border-color: #ffcdd2;
-  background: #fff8f8;
 }
 
 /* Checkbox styling */
