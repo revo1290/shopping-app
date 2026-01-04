@@ -43,28 +43,30 @@ const sortOptions = [
 </script>
 
 <template>
-  <div class="filter-bar">
+  <div class="filter-bar" role="search" aria-label="商品フィルター">
     <div class="search-box">
-      <span class="search-icon">🔍</span>
+      <span class="search-icon" aria-hidden="true">🔍</span>
       <input
         v-model="searchInput"
-        type="text"
+        type="search"
         placeholder="商品名・メモで検索..."
         class="search-input"
+        aria-label="商品を検索"
       />
       <button
         v-if="searchInput"
         class="clear-search"
         @click="searchInput = ''"
+        aria-label="検索をクリア"
       >
         ×
       </button>
     </div>
 
-    <div class="filters">
+    <div class="filters" role="group" aria-label="フィルターオプション">
       <div class="filter-group">
-        <label>カテゴリ</label>
-        <select :value="modelValue.category" @change="updateFilter('category', $event.target.value)">
+        <label for="filter-category">カテゴリ</label>
+        <select id="filter-category" :value="modelValue.category" @change="updateFilter('category', $event.target.value)">
           <option value="all">すべて</option>
           <option v-for="cat in CATEGORIES" :key="cat.value" :value="cat.value">
             {{ cat.icon }} {{ cat.label }}
@@ -73,8 +75,8 @@ const sortOptions = [
       </div>
 
       <div class="filter-group">
-        <label>優先度</label>
-        <select :value="modelValue.priority" @change="updateFilter('priority', $event.target.value)">
+        <label for="filter-priority">優先度</label>
+        <select id="filter-priority" :value="modelValue.priority" @change="updateFilter('priority', $event.target.value)">
           <option value="all">すべて</option>
           <option v-for="p in PRIORITIES" :key="p.value" :value="p.value">
             {{ p.label }}
@@ -83,8 +85,8 @@ const sortOptions = [
       </div>
 
       <div class="filter-group">
-        <label>状態</label>
-        <select :value="modelValue.purchased" @change="updateFilter('purchased', $event.target.value)">
+        <label for="filter-purchased">状態</label>
+        <select id="filter-purchased" :value="modelValue.purchased" @change="updateFilter('purchased', $event.target.value)">
           <option value="all">すべて</option>
           <option value="false">未購入</option>
           <option value="true">購入済み</option>
@@ -92,9 +94,9 @@ const sortOptions = [
       </div>
 
       <div class="filter-group">
-        <label>並び替え</label>
+        <label for="filter-sort">並び替え</label>
         <div class="sort-controls">
-          <select :value="modelValue.sort" @change="updateFilter('sort', $event.target.value)">
+          <select id="filter-sort" :value="modelValue.sort" @change="updateFilter('sort', $event.target.value)">
             <option v-for="opt in sortOptions" :key="opt.value" :value="opt.value">
               {{ opt.label }}
             </option>
@@ -102,7 +104,7 @@ const sortOptions = [
           <button
             class="order-btn"
             @click="updateFilter('order', modelValue.order === 'asc' ? 'desc' : 'asc')"
-            :title="modelValue.order === 'asc' ? '昇順' : '降順'"
+            :aria-label="modelValue.order === 'asc' ? '降順に変更' : '昇順に変更'"
           >
             {{ modelValue.order === 'asc' ? '↑' : '↓' }}
           </button>
